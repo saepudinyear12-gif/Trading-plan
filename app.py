@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
@@ -119,7 +118,7 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     
                     change = ((close_today - close_yesterday) / close_yesterday) * 100
                     
-                    if change >= 2.0 and vol_today > 100000:
+                    if change >= 1.5 and vol_today > 50000:
                         bsjp_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Closing": round(close_today, 2),
@@ -131,14 +130,13 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                 continue
         
         if bsjp_results:
-            # Mengambil TOP 10 Kandidat Terbaik
-            st.session_state.bsjp_df = pd.DataFrame(bsjp_results).sort_values(by="Kenaikan (%)", ascending=False).head(10)
+            st.session_state.bsjp_df = pd.DataFrame(bsjp_results).sort_values(by="Kenaikan (%)", ascending=False)
         else:
             st.session_state.bsjp_df = pd.DataFrame()
 
 if st.session_state.bsjp_df is not None:
     if not st.session_state.bsjp_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} TOP kandidat BSJP potensial:")
+        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} kandidat BSJP potensial:")
         st.dataframe(st.session_state.bsjp_df[['Saham', 'Harga Closing', 'Kenaikan (%)', 'Volume']])
         
         st.markdown("### 🎯 Rincian Trading Plan (TP Berdasarkan Resistance Terdekat)")
@@ -166,7 +164,7 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                     
                     change = ((close_price - open_price) / open_price) * 100
                     
-                    if change >= 1.5 and vol_today > 100000:
+                    if change >= 1.0 and vol_today > 50000:
                         bpjs_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Open Pagi": round(open_price, 2),
@@ -179,14 +177,13 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                 continue
         
         if bpjs_results:
-            # Mengambil TOP 10 Kandidat Terbaik
-            st.session_state.bpjs_df = pd.DataFrame(bpjs_results).sort_values(by="Est. Intraday (%)", ascending=False).head(10)
+            st.session_state.bpjs_df = pd.DataFrame(bpjs_results).sort_values(by="Est. Intraday (%)", ascending=False)
         else:
             st.session_state.bpjs_df = pd.DataFrame()
 
 if st.session_state.bpjs_df is not None:
     if not st.session_state.bpjs_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} TOP kandidat BPJS potensial:")
+        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS potensial:")
         st.dataframe(st.session_state.bpjs_df[['Saham', 'Open Pagi', 'Terakhir', 'Est. Intraday (%)', 'Volume']])
         
         st.markdown("### 🎯 Rincian Trading Plan (TP Berdasarkan Resistance Terdekat)")
@@ -214,7 +211,7 @@ if st.button("🚀 HAKA — Free Breakout Scanner"):
                     
                     change = ((close_today - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
                     
-                    if close_today >= prev_resistance and change >= 1.5 and vol_today > 200000:
+                    if close_today >= prev_resistance and change >= 1.0 and vol_today > 50000:
                         haka_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Breakout": round(close_today, 2),
@@ -226,14 +223,13 @@ if st.button("🚀 HAKA — Free Breakout Scanner"):
                 continue
         
         if haka_results:
-            # Mengambil TOP 10 Kandidat Terbaik
-            st.session_state.haka_df = pd.DataFrame(haka_results).sort_values(by="Kenaikan (%)", ascending=False).head(10)
+            st.session_state.haka_df = pd.DataFrame(haka_results).sort_values(by="Kenaikan (%)", ascending=False)
         else:
             st.session_state.haka_df = pd.DataFrame()
 
 if st.session_state.haka_df is not None:
     if not st.session_state.haka_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.haka_df)} TOP kandidat HAKA Breakout:")
+        st.success(f"Ditemukan {len(st.session_state.haka_df)} kandidat HAKA Breakout:")
         st.dataframe(st.session_state.haka_df[['Saham', 'Harga Breakout', 'Kenaikan (%)', 'Volume']])
         
         st.markdown("### 🎯 Rincian Trading Plan (HAKA Breakout)")
@@ -246,9 +242,9 @@ if st.session_state.haka_df is not None:
     else:
         st.warning("Belum ada saham yang menembus level breakout HAKA saat ini.")
 
-# --- LOGIKA TOMBOL SCALPING FAST TRADE (DIPERKETAT + TOP 10) ---
+# --- LOGIKA TOMBOL SCALPING FAST TRADE ---
 if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
-    with st.spinner("Memindai TOP 10 emiten scalping paling volatil..."):
+    with st.spinner("Memindai emiten scalping dengan volatilitas tinggi..."):
         scalp_results = []
         for s in WATCHLIST:
             try:
@@ -261,10 +257,12 @@ if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
                     low_today = hist['Low'].iloc[-1]
                     vol_today = hist['Volume'].iloc[-1]
                     
+                    # Pergerakan rentang harian (High - Low) / Low dalam %
                     daily_range = ((high_today - low_today) / low_today) * 100
+                    intraday_change = ((close_today - open_today) / open_today) * 100
                     
-                    # Filter Ketat: Range minimal 3.5% (sangat volatil) dan Volume minimal 500.000 transaksi aktif
-                    if daily_range >= 3.5 and vol_today >= 500000:
+                    # Kriteria Scalping: Rentang harian minimal 2.5% (volatil) dan volume aktif
+                    if daily_range >= 2.5 and vol_today > 30000:
                         scalp_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Terakhir": round(close_today, 2),
@@ -276,14 +274,13 @@ if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
                 continue
         
         if scalp_results:
-            # Hanya mengambil TOP 10 Teratas berdasarkan Range Volatilitas
-            st.session_state.scalp_df = pd.DataFrame(scalp_results).sort_values(by="Range Harian (%)", ascending=False).head(10)
+            st.session_state.scalp_df = pd.DataFrame(scalp_results).sort_values(by="Range Harian (%)", ascending=False)
         else:
             st.session_state.scalp_df = pd.DataFrame()
 
 if st.session_state.scalp_df is not None:
     if not st.session_state.scalp_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.scalp_df)} TOP 10 kandidat Scalping Fast Trade:")
+        st.success(f"Ditemukan {len(st.session_state.scalp_df)} kandidat Scalping Fast Trade:")
         st.dataframe(st.session_state.scalp_df[['Saham', 'Harga Terakhir', 'Range Harian (%)', 'Volume']])
         
         st.markdown("### 🎯 Rincian Trading Plan (Scalping Fast Trade)")
@@ -291,10 +288,10 @@ if st.session_state.scalp_df is not None:
             saham = row["Saham"]
             harga = row["Harga Terakhir"]
             tp = row["Resistance TP"]
-            sl = round(harga * 0.985, 2)
+            sl = round(harga * 0.985, 2) # Stop loss sangat ketat (-1.5%) khusus scalping cepat
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (High Harian):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-1.5%)")
     else:
-        st.warning("Belum ada saham yang memenuhi kriteria ketat scalping saat ini.")
+        st.warning("Belum ada saham yang memenuhi kriteria scalping volatil saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
