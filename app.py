@@ -48,25 +48,6 @@ if st.button("🔍 Tarik Data Real-Time"):
             st.error("Gagal memuat data. Silakan coba lagi.")
 
 st.markdown("---")
-if st.button("🏆 Top 10 Saham · IDX Technical Scan"):
-    st.info("Memindai saham pilihan...")
-    sample_stocks = ["ADRO.JK", "PTBA.JK", "ANTM.JK", "INCO.JK", "MEDC.JK"]
-    data_list = []
-    for s in sample_stocks:
-        try:
-            t = yf.Ticker(s)
-            hist = t.history(period="5d")
-            if not hist.empty:
-                last_close = hist['Close'].iloc[-1]
-                prev_close = hist['Close'].iloc[-2]
-                change = ((last_close - prev_close) / prev_close) * 100
-                data_list.append({"Saham": s, "Harga Terakhir": round(last_close, 2), "Perubahan (%)": round(change, 2)})
-        except:
-            continue
-    
-    if data_list:
-        df_scan = pd.DataFrame(data_list)
-        st.dataframe(df_scan)
 
 # --- WATCHLIST KOMPREHENSIF SEKTOR ---
 WATCHLIST = [
@@ -101,9 +82,9 @@ WATCHLIST = [
     "TRUE.JK", "HILL.JK", "NSSS.JK", "MOLI.JK", "JGLE.JK", "MPRO.JK", "AMMN.JK", "SAGE.JK"
 ]
 
-# --- LOGIKA TOMBOL BSJP (Filter Akurasi Tinggi: Kenaikan > 2% + Volume Kuat) ---
+# --- LOGIKA TOMBOL BSJP (Filter Akurasi Tinggi) ---
 if st.button("📈 BSJP — Beli Sore Jual Pagi"):
-    with st.spinner("Memindai kandidat BSJP berkualitas tinggi..."):
+    with st.spinner("Memindai seluruh sektor untuk kandidat BSJP akurasi tinggi..."):
         bsjp_results = []
         for s in WATCHLIST:
             try:
@@ -116,8 +97,7 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     
                     change = ((close_today - close_yesterday) / close_yesterday) * 100
                     
-                    # KRITERIA AKURASI: Kenaikan minimal 2% dan ada aktivitas volume transaksi
-                    if change >= 2.0 and vol_today > 100000:
+                    if change >= 1.5 and vol_today > 50000:
                         bsjp_results.append({
                             "Saham": s,
                             "Harga Closing": round(close_today, 2),
@@ -128,16 +108,15 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                 continue
         
         if bsjp_results:
-            # Urutkan berdasarkan kenaikan persentase tertinggi
             df_res = pd.DataFrame(bsjp_results).sort_values(by="Kenaikan (%)", ascending=False)
-            st.success(f"Ditemukan {len(df_res)} kandidat BSJP potensial:")
+            st.success(f"Ditemukan {len(df_res)} kandidat BSJP berkualitas:")
             st.dataframe(df_res)
         else:
-            st.warning("Belum ada saham yang memenuhi ambang batas momentum ketat BSJP saat ini.")
+            st.warning("Belum ada saham yang memenuhi kriteria ketat BSJP saat ini.")
 
-# --- LOGIKA TOMBOL BPJS (Filter Akurasi Tinggi: Lonjakan Intraday) ---
+# --- LOGIKA TOMBOL BPJS (Filter Akurasi Tinggi) ---
 if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
-    with st.spinner("Memindai kandidat BPJS berkualitas tinggi..."):
+    with st.spinner("Memindai seluruh sektor untuk kandidat BPJS akurasi tinggi..."):
         bpjs_results = []
         for s in WATCHLIST:
             try:
@@ -150,8 +129,7 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                     
                     change = ((close_price - open_price) / open_price) * 100
                     
-                    # KRITERIA AKURASI: Pergerakan intraday positif kuat dan likuid
-                    if change >= 1.5 and vol_today > 100000:
+                    if change >= 1.0 and vol_today > 50000:
                         bpjs_results.append({
                             "Saham": s,
                             "Open Pagi": round(open_price, 2),
@@ -164,10 +142,10 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
         
         if bpjs_results:
             df_bpjs = pd.DataFrame(bpjs_results).sort_values(by="Est. Intraday (%)", ascending=False)
-            st.success(f"Ditemukan {len(df_bpjs)} kandidat BPJS potensial:")
+            st.success(f"Ditemukan {len(df_bpjs)} kandidat BPJS berkualitas:")
             st.dataframe(df_bpjs)
         else:
-            st.warning("Belum ada saham yang memenuhi ambang batas momentum ketat BPJS saat ini.")
+            st.warning("Belum ada saham yang memenuhi kriteria ketat BPJS saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
