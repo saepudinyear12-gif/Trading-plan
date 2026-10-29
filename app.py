@@ -70,77 +70,40 @@ if st.button("🏆 Top 10 Saham · IDX Technical Scan"):
 
 # --- WATCHLIST KOMPREHENSIF SEKTOR ---
 WATCHLIST = [
-    # --- 1. PROPERTI & REAL ESTATE ---
     "PANI.JK", "BSDE.JK", "CTRA.JK", "PWON.JK", "SMRA.JK", "ASRI.JK", "LPKR.JK", 
     "DILD.JK", "BEST.JK", "DUTI.JK", "BKSL.JK", "KIJA.JK", "MMLP.JK", "GWSA.JK",
-
-    # --- 2. KESEHATAN (Health) ---
     "SILO.JK", "HEAL.JK", "MIKA.JK", "KAEF.JK", "INAF.JK", "DVLA.JK", "PEHA.JK", "RSGK.JK",
-    
-    # --- 3. TEKNOLOGI, DIGITAL & KABEL ---
     "GOTO.JK", "BUKA.JK", "EMTK.JK", "MTDL.JK", "BELI.JK", "SCMA.JK", 
     "EXCL.JK", "ISAT.JK", "WIFI.JK", "AXIO.JK",
-    
-    # --- 4. BAHAN BAKU / BASIC MATERIALS ---
     "BRPT.JK", "TPIA.JK", "TKIM.JK", "INKP.JK", "IMPC.JK", "ESSA.JK", "NCKL.JK", 
     "MBMA.JK", "PSAB.JK", "DKHH.JK", "ANTM.JK", "INCO.JK", "MDKA.JK",
-    
-    # --- 5. ENERGI (Batubara, Migas, EBT & Jasa Energi) ---
     "BUMI.JK", "BRMS.JK", "DEWA.JK", "ENRG.JK", "ELSA.JK", "DOID.JK", "RAJA.JK", "PGEO.JK",
     "ADRO.JK", "PTBA.JK", "ITMG.JK", "HRUM.JK", "ADMR.JK", "MEDC.JK", "INDY.JK", "TOBA.JK", 
     "BSSR.JK", "BIPI.JK", "SGER.JK", "RMKE.JK", "IATA.JK", "COAL.JK", "SHIP.JK", "SOCI.JK", "TPMA.JK",
-    
-    # --- 6. TEKSTIL & GARMEN ---
     "ARGO.JK", "BELL.JK", "TRIS.JK", "POLU.JK", "SSTM.JK", "ERTX.JK", "ESTI.JK", "RICY.JK", "TFCO.JK", "PBRX.JK", "ADMG.JK",
-
-    # --- 7. TRANSPORTASI, LOGISTIK & MARITIM ---
     "ASSA.JK", "BIRD.JK", "HAIS.JK", "PSSI.JK", "BBRM.JK", "GTSI.JK", "SMDR.JK", "TMAS.JK", "BOAT.JK",
     "LEAD.JK", "WINS.JK", "HITS.JK", "IPCC.JK",
-
-    # --- 8. CONSUMER, RETAIL, KEUANGAN & MULTIFINANCE ---
     "ACES.JK", "ERAA.JK", "MAPI.JK", "MAPA.JK", "CMRY.JK", "SIDO.JK", "JPFA.JK", "CPIN.JK", "CLEO.JK", "MIDI.JK",
     "ARTO.JK", "BRIS.JK", "PNLF.JK", "BBYB.JK", "AGRO.JK", "BABP.JK", "CFIN.JK", "ADMF.JK", "WOMF.JK",
     "BANK.JK", "INPC.JK", "BBHI.JK", "MASB.JK", "BGTG.JK",
-
-    # --- 9. PERKEBUNAN, CPO & PERTANIAN ---
     "TAPG.JK", "DSNG.JK", "SSMS.JK", "LSIP.JK", "AALI.JK", "PALM.JK", "BWPT.JK", "SIMP.JK", "SGRO.JK", "CSRA.JK",
-
-    # --- 10. PERINDUSTRIAN & KOMPONEN OTOMOTIF ---
     "AUTO.JK", "DRMA.JK", "SMSM.JK", "BOLT.JK", "GJTL.JK", "IMAS.JK", "KBLI.JK", "VOKS.JK", "ARNA.JK", "MARK.JK",
-
-    # --- 11. MEDIA & HIBURAN ---
     "TMPO.JK", "FILM.JK", "FORU.JK", "MARI.JK", "MNCN.JK", "BMTR.JK", "VIVA.JK",
-
-    # --- 12. KONSTRUKSI SWASTA, KAWASAN INDUSTRI & INFRASTRUKTUR ---
     "ACST.JK", "TOTL.JK", "NRCA.JK", "PPRE.JK", "WEGE.JK", "IDPR.JK", "KBLM.JK",
     "SSIA.JK", "IPAC.JK", "MPXL.JK", "SAME.JK",
-
-    # --- 13. KEMASAN, PLASTIK & DAUR ULANG ---
     "PBID.JK", "IPOL.JK", "FAPA.JK", "SOUL.JK", "TALF.JK", "KMTR.JK", "NPGF.JK",
-
-    # --- 14. PETERNAKAN & PAKAN TERNAK (POULTRY) ---
     "MAIN.JK", "SIPD.JK", "WMUU.JK", "WMPP.JK",
-
-    # --- 15. HOTEL, RESTORAN & PARIWISATA (HOREKA) ---
     "FAST.JK", "PZZA.JK", "PANR.JK", "BUVA.JK",
-
-    # --- 16. HOLDING INVESTASI & ASURANSI ---
     "ABMM.JK", "ABDA.JK", "ASBI.JK", "AHAP.JK",
-
-    # --- 17. INFRASTRUKTUR, DATA CENTER & MENARA ---
     "TOWR.JK", "TBIG.JK", "CENT.JK", "IBST.JK", "MTEL.JK", "BALI.JK",
-
-    # --- 18. NIKEL, MINERAL KRITIS & EV ---
     "NICL.JK", "DKFT.JK", "CITA.JK", "NICK.JK",
-
-    # --- HIGH VOLATILITY / GORENGAN SUPER AKTIF LAINNYA ---
     "DOOH.JK", "HUMI.JK", "STRK.JK", "KEEN.JK", "CUAN.JK", "PACK.JK", 
     "TRUE.JK", "HILL.JK", "NSSS.JK", "MOLI.JK", "JGLE.JK", "MPRO.JK", "AMMN.JK", "SAGE.JK"
 ]
 
-# --- LOGIKA TOMBOL BSJP ---
+# --- LOGIKA TOMBOL BSJP (Filter Akurasi Tinggi: Kenaikan > 2% + Volume Kuat) ---
 if st.button("📈 BSJP — Beli Sore Jual Pagi"):
-    with st.spinner("Memindai seluruh sektor untuk kandidat BSJP..."):
+    with st.spinner("Memindai kandidat BSJP berkualitas tinggi..."):
         bsjp_results = []
         for s in WATCHLIST:
             try:
@@ -149,25 +112,32 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                 if len(hist) >= 2:
                     close_today = hist['Close'].iloc[-1]
                     close_yesterday = hist['Close'].iloc[-2]
+                    vol_today = hist['Volume'].iloc[-1]
+                    
                     change = ((close_today - close_yesterday) / close_yesterday) * 100
-                    if change > 0:
+                    
+                    # KRITERIA AKURASI: Kenaikan minimal 2% dan ada aktivitas volume transaksi
+                    if change >= 2.0 and vol_today > 100000:
                         bsjp_results.append({
                             "Saham": s,
                             "Harga Closing": round(close_today, 2),
-                            "Kenaikan (%)": round(change, 2)
+                            "Kenaikan (%)": round(change, 2),
+                            "Volume": int(vol_today)
                         })
             except:
                 continue
         
         if bsjp_results:
-            st.success(f"Ditemukan {len(bsjp_results)} kandidat BSJP:")
-            st.dataframe(pd.DataFrame(bsjp_results))
+            # Urutkan berdasarkan kenaikan persentase tertinggi
+            df_res = pd.DataFrame(bsjp_results).sort_values(by="Kenaikan (%)", ascending=False)
+            st.success(f"Ditemukan {len(df_res)} kandidat BSJP potensial:")
+            st.dataframe(df_res)
         else:
-            st.warning("Belum ada saham yang memenuhi kriteria BSJP saat ini.")
+            st.warning("Belum ada saham yang memenuhi ambang batas momentum ketat BSJP saat ini.")
 
-# --- LOGIKA TOMBOL BPJS ---
+# --- LOGIKA TOMBOL BPJS (Filter Akurasi Tinggi: Lonjakan Intraday) ---
 if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
-    with st.spinner("Memindai seluruh sektor untuk kandidat BPJS..."):
+    with st.spinner("Memindai kandidat BPJS berkualitas tinggi..."):
         bpjs_results = []
         for s in WATCHLIST:
             try:
@@ -176,21 +146,28 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                 if not hist.empty:
                     open_price = hist['Open'].iloc[-1]
                     close_price = hist['Close'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    
                     change = ((close_price - open_price) / open_price) * 100
-                    bpjs_results.append({
-                        "Saham": s,
-                        "Open Pagi": round(open_price, 2),
-                        "Terakhir": round(close_price, 2),
-                        "Est. Intraday (%)": round(change, 2)
-                    })
+                    
+                    # KRITERIA AKURASI: Pergerakan intraday positif kuat dan likuid
+                    if change >= 1.5 and vol_today > 100000:
+                        bpjs_results.append({
+                            "Saham": s,
+                            "Open Pagi": round(open_price, 2),
+                            "Terakhir": round(close_price, 2),
+                            "Est. Intraday (%)": round(change, 2),
+                            "Volume": int(vol_today)
+                        })
             except:
                 continue
         
         if bpjs_results:
-            st.success(f"Ditemukan {len(bpjs_results)} kandidat BPJS:")
-            st.dataframe(pd.DataFrame(bpjs_results))
+            df_bpjs = pd.DataFrame(bpjs_results).sort_values(by="Est. Intraday (%)", ascending=False)
+            st.success(f"Ditemukan {len(df_bpjs)} kandidat BPJS potensial:")
+            st.dataframe(df_bpjs)
         else:
-            st.warning("Data BPJS belum tersedia.")
+            st.warning("Belum ada saham yang memenuhi ambang batas momentum ketat BPJS saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
