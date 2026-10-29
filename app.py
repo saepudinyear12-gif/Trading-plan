@@ -408,4 +408,4 @@ if st.session_state.support_df is not None:
         st.warning("Belum ada saham yang tertahan pas di area Demand Zone saat ini.")
 
 st.markdown("---")
-st.subheader("⚙️ PENGATURAN API"
+st.markdown("### ⚙️ PENGATURAN API")
