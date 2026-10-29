@@ -22,7 +22,6 @@ ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: BBCA, BBRI, ASII)
 
 @st.cache_data(ttl=300)
 def load_stock_data(ticker):
-    # Otomatis tambahkan .JK jika belum ada
     if not ticker.endswith(".JK"):
         clean_ticker = ticker.strip().upper() + ".JK"
     else:
@@ -44,9 +43,9 @@ if st.button("🔍 Tarik Data Real-Time"):
                 st.subheader("Data Transaksi Terakhir")
                 st.dataframe(df.tail(5))
             else:
-                st.warning(f"Data untuk '{ticker_input}' tidak ditemukan. Pastikan kode saham IDX benar.")
+                st.warning(f"Data untuk '{ticker_input}' tidak ditemukan.")
         except Exception as e:
-            st.error(f"Gagal memuat data. Silakan coba lagi beberapa saat.")
+            st.error("Gagal memuat data. Silakan coba lagi.")
 
 st.markdown("---")
 if st.button("🏆 Top 10 Saham · IDX Technical Scan"):
@@ -68,14 +67,63 @@ if st.button("🏆 Top 10 Saham · IDX Technical Scan"):
     if data_list:
         df_scan = pd.DataFrame(data_list)
         st.dataframe(df_scan)
-    else:
-        st.warning("Gagal memuat data scan saat ini.")
 
+# --- LOGIKA TOMBOL BSJP ---
 if st.button("📈 BSJP — Beli Sore Jual Pagi"):
-    st.success("Menjalankan skema screening BSJP...")
+    with st.spinner("Menjalankan screening BSJP (Kandidat akumulasi penutupan)..."):
+        bsjp_watchlist = ["ASII.JK", "BBCA.JK", "BBRI.JK", "ADRO.JK", "PTBA.JK", "ANTM.JK"]
+        bsjp_results = []
+        for s in bsjp_watchlist:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="3d")
+                if len(hist) >= 2:
+                    close_today = hist['Close'].iloc[-1]
+                    close_yesterday = hist['Close'].iloc[-2]
+                    change = ((close_today - close_yesterday) / close_yesterday) * 100
+                    # Filter sederhana: momentum positif di sesi sore
+                    if change > 0:
+                        bsjp_results.append({
+                            "Saham": s,
+                            "Harga Closing": round(close_today, 2),
+                            "Kenaikan (%)": round(change, 2)
+                        })
+            except:
+                continue
+        
+        if bsjp_results:
+            st.success("Hasil Screening Kandidat BSJP:")
+            st.dataframe(pd.DataFrame(bsjp_results))
+        else:
+            st.warning("Belum ada saham yang memenuhi kriteria BSJP saat ini.")
 
+# --- LOGIKA TOMBOL BPJS ---
 if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
-    st.warning("Menjalankan skema screening BPJS...")
+    with st.spinner("Menjalankan screening BPJS (Kandidat pantauan pagi)..."):
+        bpjs_watchlist = ["GOTO.JK", "BUMI.JK", "DEWA.JK", "ANTM.JK", "BRMS.JK"]
+        bpjs_results = []
+        for s in bpjs_watchlist:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="2d")
+                if not hist.empty:
+                    open_price = hist['Open'].iloc[-1]
+                    close_price = hist['Close'].iloc[-1]
+                    change = ((close_price - open_price) / open_price) * 100
+                    bpjs_results.append({
+                    "Saham": s,
+                    "Open Pagi": round(open_price, 2),
+                    "Terakhir": round(close_price, 2),
+                    "Est. Intraday (%)": round(change, 2)
+                })
+            except:
+                continue
+        
+        if bpjs_results:
+            st.success("Hasil Screening Kandidat BPJS:")
+            st.dataframe(pd.DataFrame(bpjs_results))
+        else:
+            st.warning("Data BPJS belum tersedia.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
