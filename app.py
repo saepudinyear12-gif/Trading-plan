@@ -22,9 +22,11 @@ if "bsjp_df" not in st.session_state:
     st.session_state.bsjp_df = None
 if "bpjs_df" not in st.session_state:
     st.session_state.bpjs_df = None
+if "haka_df" not in st.session_state:
+    st.session_state.haka_df = None
 
-# Menu Input Kode Saham untuk Data Real-Time
-ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: BBCA, BBRI, ASII)", value="BBCA")
+# Menu Input Kode Saham untuk Data Real-Time & Trading Plan
+ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: TMAS, BBCA, ASII)", value="TMAS")
 
 @st.cache_data(ttl=300)
 def load_stock_data(ticker):
@@ -37,12 +39,23 @@ def load_stock_data(ticker):
     df = stock.history(period="1mo")
     return df, clean_ticker
 
-if st.button("🔍 Tarik Data Real-Time"):
-    with st.spinner(f"Mengambil data live untuk {ticker_input}..."):
+if st.button("🔍 Tarik Data Real-Time & Trading Plan"):
+    with st.spinner(f"Menghitung Trading Plan untuk {ticker_input}..."):
         try:
             df, final_ticker = load_stock_data(ticker_input)
             if not df.empty:
                 st.success(f"Berhasil memuat data {final_ticker}!")
+                
+                last_price = df['Close'].iloc[-1]
+                resistance_tp = round(df['High'].iloc[-5:].max(), 2)
+                suggested_sl = round(last_price * 0.98, 2)
+                
+                st.markdown(f"### 📋 Trading Plan: {final_ticker.replace('.JK', '')}")
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Harga Acuan", f"Rp {int(last_price)}")
+                col2.metric("Target TP (Resistance)", f"Rp {int(resistance_tp)}")
+                col3.metric("Stop Loss (-2%)", f"Rp {int(suggested_sl)}")
+                
                 st.subheader(f"Grafik Harga Penutupan - {final_ticker}")
                 st.line_chart(df['Close'])
                 
@@ -95,7 +108,7 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
         for s in WATCHLIST:
             try:
                 t = yf.Ticker(s)
-                hist = t.history(period="3d")
+                hist = t.history(period="5d")
                 if len(hist) >= 2:
                     close_today = hist['Close'].iloc[-1]
                     close_yesterday = hist['Close'].iloc[-2]
@@ -105,10 +118,11 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     
                     if change >= 1.5 and vol_today > 50000:
                         bsjp_results.append({
-                            "Saham": s.replace(".JK", ""),  # Simbol .JK dihapus di sini
+                            "Saham": s.replace(".JK", ""),
                             "Harga Closing": round(close_today, 2),
                             "Kenaikan (%)": round(change, 2),
-                            "Volume": int(vol_today)
+                            "Volume": int(vol_today),
+                            "Resistance": round(hist['High'].max(), 2)
                         })
             except:
                 continue
@@ -118,11 +132,18 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
         else:
             st.session_state.bsjp_df = pd.DataFrame()
 
-# Tampilkan hasil BSJP jika ada di memori
 if st.session_state.bsjp_df is not None:
     if not st.session_state.bsjp_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} kandidat BSJP berkualitas:")
-        st.dataframe(st.session_state.bsjp_df)
+        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} kandidat BSJP potensial:")
+        st.dataframe(st.session_state.bsjp_df[['Saham', 'Harga Closing', 'Kenaikan (%)', 'Volume']])
+        
+        st.markdown("### 🎯 Rincian Trading Plan (TP Berdasarkan Resistance Terdekat)")
+        for index, row in st.session_state.bsjp_df.iterrows():
+            saham = row["Saham"]
+            harga = row["Harga Closing"]
+            tp = row["Resistance"]
+            sl = round(harga * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Resistance):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
     else:
         st.warning("Belum ada saham yang memenuhi kriteria ketat BSJP saat ini.")
 
@@ -133,8 +154,8 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
         for s in WATCHLIST:
             try:
                 t = yf.Ticker(s)
-                hist = t.history(period="2d")
-                if not hist.empty:
+                hist = t.history(period="5d")
+                if len(hist) >= 2:
                     open_price = hist['Open'].iloc[-1]
                     close_price = hist['Close'].iloc[-1]
                     vol_today = hist['Volume'].iloc[-1]
@@ -143,11 +164,12 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                     
                     if change >= 1.0 and vol_today > 50000:
                         bpjs_results.append({
-                            "Saham": s.replace(".JK", ""),  # Simbol .JK dihapus di sini
+                            "Saham": s.replace(".JK", ""),
                             "Open Pagi": round(open_price, 2),
                             "Terakhir": round(close_price, 2),
                             "Est. Intraday (%)": round(change, 2),
-                            "Volume": int(vol_today)
+                            "Volume": int(vol_today),
+                            "Resistance": round(hist['High'].max(), 2)
                         })
             except:
                 continue
@@ -157,13 +179,69 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
         else:
             st.session_state.bpjs_df = pd.DataFrame()
 
-# Tampilkan hasil BPJS jika ada di memori
 if st.session_state.bpjs_df is not None:
     if not st.session_state.bpjs_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS berkualitas:")
-        st.dataframe(st.session_state.bpjs_df)
+        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS potensial:")
+        st.dataframe(st.session_state.bpjs_df[['Saham', 'Open Pagi', 'Terakhir', 'Est. Intraday (%)', 'Volume']])
+        
+        st.markdown("### 🎯 Rincian Trading Plan (TP Berdasarkan Resistance Terdekat)")
+        for index, row in st.session_state.bpjs_df.iterrows():
+            saham = row["Saham"]
+            harga = row["Terakhir"]
+            tp = row["Resistance"]
+            sl = round(harga * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Resistance):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
     else:
         st.warning("Belum ada saham yang memenuhi kriteria ketat BPJS saat ini.")
+
+# --- LOGIKA TOMBOL HAKA / BREAKOUT ---
+if st.button("🚀 HAKA — Free Breakout Scanner"):
+    with st.spinner("Memindai emiten potensial Breakout / HAKA..."):
+        haka_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="10d")
+                if len(hist) >= 5:
+                    close_today = hist['Close'].iloc[-1]
+                    # Resistance dari 5 hari sebelumnya (sebelum hari ini)
+                    prev_resistance = hist['High'].iloc[-6:-1].max() if len(hist) >= 6 else hist['High'].iloc[:-1].max()
+                    vol_today = hist['Volume'].iloc[-1]
+                    avg_vol = hist['Volume'].iloc[-6:-1].mean()
+                    
+                    change = ((close_today - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
+                    
+                    # Kondisi Breakout HAKA: Harga menembus resistance sebelumnya dengan volume aktif
+                    if close_today >= prev_resistance and change >= 1.0 and vol_today > 50000:
+                        haka_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Breakout": round(close_today, 2),
+                            "Kenaikan (%)": round(change, 2),
+                            "Volume": int(vol_today),
+                            "Next Resistance": round(close_today * 1.05, 2)
+                        })
+            except:
+                continue
+        
+        if haka_results:
+            st.session_state.haka_df = pd.DataFrame(haka_results).sort_values(by="Kenaikan (%)", ascending=False)
+        else:
+            st.session_state.haka_df = pd.DataFrame()
+
+if st.session_state.haka_df is not None:
+    if not st.session_state.haka_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.haka_df)} kandidat HAKA Breakout:")
+        st.dataframe(st.session_state.haka_df[['Saham', 'Harga Breakout', 'Kenaikan (%)', 'Volume']])
+        
+        st.markdown("### 🎯 Rincian Trading Plan (HAKA Breakout)")
+        for index, row in st.session_state.haka_df.iterrows():
+            saham = row["Saham"]
+            harga = row["Harga Breakout"]
+            tp = row["Next Resistance"]
+            sl = round(harga * 0.975, 2) # Stop loss agak longgar sedikit (-2.5%) untuk mengantisipasi false breakout
+            st.markdown(f"- **{saham}** (Harga Breakout: {harga}) ➡️ **Target TP:** Rp {tp} | **Stop Loss:** Rp {sl} (-2.5%)")
+    else:
+        st.warning("Belum ada saham yang menembus level breakout HAKA saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
