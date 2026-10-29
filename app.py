@@ -24,6 +24,8 @@ if "bpjs_df" not in st.session_state:
     st.session_state.bpjs_df = None
 if "haka_df" not in st.session_state:
     st.session_state.haka_df = None
+if "scalp_df" not in st.session_state:
+    st.session_state.scalp_df = None
 
 # Menu Input Kode Saham untuk Data Real-Time & Trading Plan
 ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: TMAS, BBCA, ASII)", value="TMAS")
@@ -204,14 +206,11 @@ if st.button("🚀 HAKA — Free Breakout Scanner"):
                 hist = t.history(period="10d")
                 if len(hist) >= 5:
                     close_today = hist['Close'].iloc[-1]
-                    # Resistance dari 5 hari sebelumnya (sebelum hari ini)
                     prev_resistance = hist['High'].iloc[-6:-1].max() if len(hist) >= 6 else hist['High'].iloc[:-1].max()
                     vol_today = hist['Volume'].iloc[-1]
-                    avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     
                     change = ((close_today - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
                     
-                    # Kondisi Breakout HAKA: Harga menembus resistance sebelumnya dengan volume aktif
                     if close_today >= prev_resistance and change >= 1.0 and vol_today > 50000:
                         haka_results.append({
                             "Saham": s.replace(".JK", ""),
@@ -238,10 +237,61 @@ if st.session_state.haka_df is not None:
             saham = row["Saham"]
             harga = row["Harga Breakout"]
             tp = row["Next Resistance"]
-            sl = round(harga * 0.975, 2) # Stop loss agak longgar sedikit (-2.5%) untuk mengantisipasi false breakout
+            sl = round(harga * 0.975, 2)
             st.markdown(f"- **{saham}** (Harga Breakout: {harga}) ➡️ **Target TP:** Rp {tp} | **Stop Loss:** Rp {sl} (-2.5%)")
     else:
         st.warning("Belum ada saham yang menembus level breakout HAKA saat ini.")
+
+# --- LOGIKA TOMBOL SCALPING FAST TRADE ---
+if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
+    with st.spinner("Memindai emiten scalping dengan volatilitas tinggi..."):
+        scalp_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="5d")
+                if len(hist) >= 2:
+                    close_today = hist['Close'].iloc[-1]
+                    open_today = hist['Open'].iloc[-1]
+                    high_today = hist['High'].iloc[-1]
+                    low_today = hist['Low'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    
+                    # Pergerakan rentang harian (High - Low) / Low dalam %
+                    daily_range = ((high_today - low_today) / low_today) * 100
+                    intraday_change = ((close_today - open_today) / open_today) * 100
+                    
+                    # Kriteria Scalping: Rentang harian minimal 2.5% (volatil) dan volume aktif
+                    if daily_range >= 2.5 and vol_today > 30000:
+                        scalp_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Terakhir": round(close_today, 2),
+                            "Range Harian (%)": round(daily_range, 2),
+                            "Volume": int(vol_today),
+                            "Resistance TP": round(high_today, 2)
+                        })
+            except:
+                continue
+        
+        if scalp_results:
+            st.session_state.scalp_df = pd.DataFrame(scalp_results).sort_values(by="Range Harian (%)", ascending=False)
+        else:
+            st.session_state.scalp_df = pd.DataFrame()
+
+if st.session_state.scalp_df is not None:
+    if not st.session_state.scalp_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.scalp_df)} kandidat Scalping Fast Trade:")
+        st.dataframe(st.session_state.scalp_df[['Saham', 'Harga Terakhir', 'Range Harian (%)', 'Volume']])
+        
+        st.markdown("### 🎯 Rincian Trading Plan (Scalping Fast Trade)")
+        for index, row in st.session_state.scalp_df.iterrows():
+            saham = row["Saham"]
+            harga = row["Harga Terakhir"]
+            tp = row["Resistance TP"]
+            sl = round(harga * 0.985, 2) # Stop loss sangat ketat (-1.5%) khusus scalping cepat
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (High Harian):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-1.5%)")
+    else:
+        st.warning("Belum ada saham yang memenuhi kriteria scalping volatil saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
