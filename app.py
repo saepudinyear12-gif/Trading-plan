@@ -1,6 +1,8 @@
 import streamlit as st
+import yfinance as yf
+import pandas as pd
 
-st.set_page_config(page_title="Stock Trading Engine", layout="centered")
+st.set_page_config(page_title="Stock Trading Engine Real-Time", layout="centered")
 
 st.markdown("""
     <style>
@@ -13,29 +15,46 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-avg_sell = st.text_input("", placeholder="Avg Sell Price (opsional)")
-col_hapus, _ = st.columns([1, 2])
-with col_hapus:
-    if st.button("× Hapus"):
-        st.toast("Input dibersihkan!")
+st.title("📈 IDX Real-Time Trading Engine")
 
-if st.button("+ Tambah Broker"):
-    st.info("Fitur tambah broker diklik.")
+# Menu Input Kode Saham untuk Data Real-Time
+ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: BBCA.JK, BBRI.JK, ASII.JK)", value="BBCA.JK")
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("📊 Kamus Indikator"):
-        st.write("Membuka Kamus Indikator...")
-with col2:
-    if st.button("📈 Riwayat Prediksi"):
-        st.write("Membuka Riwayat Prediksi...")
+if st.button("🔍 Tarik Data Real-Time"):
+    with st.spinner(f"Mengambil data live untuk {ticker_input}..."):
+        try:
+            stock = yf.Ticker(ticker_input)
+            df = stock.history(period="1mo")
+            if not df.empty:
+                st.success(f"Berhasil memuat data {ticker_input}!")
+                st.subheader("Grafik Harga Penutupan (1 Bulan Terakhir)")
+                st.line_chart(df['Close'])
+                
+                st.subheader("Data Transaksi Terakhir")
+                st.dataframe(df.tail(5))
+            else:
+                st.warning("Data tidak ditemukan, pastikan penulisan kode saham benar (gunakan akhiran .JK untuk saham Indonesia).")
+        except Exception as e:
+            st.error(f"Terjadi kesalahan: {e}")
 
-if st.button("🔄 Reset Memory"):
-    st.success("Memory berhasil di-reset!")
-
-if st.button("🏆 Top 10 Saham Besok · IDX Technical Scan"):
+st.markdown("---")
+if st.button("🏆 Top 10 Saham · IDX Technical Scan"):
     st.snow()
-    st.write("Menjalankan pemindaian IDX Technical Scan...")
+    st.info("Memindai saham likuid non-bluechip pilihan...")
+    sample_stocks = ["ADRO.JK", "PTBA.JK", "ANTM.JK", "INCO.JK", "MEDC.JK"]
+    data_list = []
+    for s in sample_stocks:
+        t = yf.Ticker(s)
+        hist = t.history(period="5d")
+        if not hist.empty:
+            last_close = hist['Close'].iloc[-1]
+            prev_close = hist['Close'].iloc[-2]
+            change = ((last_close - prev_close) / prev_close) * 100
+            data_list.append({"Saham": s, "Harga Terakhir": round(last_close, 2), "Perubahan (%)": round(change, 2)})
+    
+    if data_list:
+        df_scan = pd.DataFrame(data_list)
+        st.dataframe(df_scan)
 
 if st.button("📈 BSJP — Beli Sore Jual Pagi"):
     st.success("Menjalankan skema screening BSJP...")
@@ -45,26 +64,5 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
-
 api_key = st.text_input("", type="password", value="1234567890abcdef")
-
-col_tampil, col_simpan = st.columns(2)
-with col_tampil:
-    show_key = st.button("👁️ Tampilkan")
-with col_simpan:
-    save_key = st.button("💾 Simpan Key")
-
-high_accuracy = st.toggle("Mode Akurasi Tinggi (50.000 simulasi MC, lebih presisi tapi lebih lambat)")
-
-st.markdown("""
-    <style>
-    div.stButton > button:first-child {
-        background-color: #f0a500;
-        color: white;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-if st.button("▶ Run Hyper-Hybrid Macro Engine V21"):
-    with st.spinner("Menjalankan kalkulasi Macro Engine V21..."):
-        st.success("Analisis Macro Engine V21 Selesai!")
+high_accuracy = st.toggle("Mode Akurasi Tinggi (50.000 simulasi MC)")
