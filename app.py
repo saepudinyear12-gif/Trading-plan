@@ -7,7 +7,7 @@ st.set_page_config(page_title="Stock Trading Engine Real-Time", layout="centered
 st.markdown("""
     <style>
     .stButton>button {
-        width: 100%
+        width: 100%;
         border-radius: 8px;
         font-weight: bold;
         padding: 0.6rem;
@@ -123,7 +123,6 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    # Tambahan filter RVOL >= 1.5 (Volume minimal 1.5x rata-rata 5 hari)
                     if close_today <= 3000 and turnover >= 3_000_000_000 and change >= 1.5 and rvol >= 1.5:
                         bsjp_results.append({
                             "Saham": s.replace(".JK", ""),
@@ -380,7 +379,6 @@ if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
                     avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    # Saat mendekati support, volume tidak boleh mati total (minimal RVOL 0.8 atau ada transaksi sehat)
                     if close_today <= 3000 and turnover >= 3_000_000_000 and (0 <= distance_to_demand <= 3.0) and rvol >= 0.8:
                         support_results.append({
                             "Saham": s.replace(".JK", ""),
@@ -388,7 +386,7 @@ if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
                             "Demand Zone": round(demand_zone, 2),
                             "Jarak ke Demand (%)": round(distance_to_demand, 2),
                             "RVOL": round(rvol, 2),
-                            "Supply TP": round(supply_zone, 2)
+                    "Supply TP": round(supply_zone, 2)
                         })
             except:
                 continue
@@ -402,4 +400,19 @@ if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
 if st.session_state.support_df is not None:
     if not st.session_state.support_df.empty:
         st.success(f"Ditemukan {len(st.session_state.support_df)} kandidat Saham di Area Demand Zone:")
-        st.dataframe(st.session_state.suppot
+        st.dataframe(st.session_state.support_df[['Saham', 'Harga Terakhir', 'Demand Zone', 'Jarak ke Demand (%)', 'RVOL']])
+        st.markdown("### 🎯 Rincian Trading Plan (Support Supply & Demand Hunting)")
+        for index, row in st.session_state.suppor_df.iterrows():
+            saham = row["Saham"]
+            harga = row["Harga Terakhir"]
+            demand = row["Demand Zone"]
+            tp = row["Supply TP"]
+            sl = round(demand * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Demand Zone:** Rp {demand} | **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl}")
+    else:
+        st.warning("Belum ada saham yang tertahan di Demand Zone dengan likuiditas memadai saat ini.")
+
+st.markdown("---")
+st.markdown("### ⚙️ PENGATURAN API")
+api_key = st.text_input("API Key", type="password", value="1234567890abcdef")
+high_accuracy = st.toggle("Mode Akurasi Tinggi (50.000 simulasi MC)")
