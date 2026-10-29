@@ -17,20 +17,11 @@ st.markdown("""
 
 st.title("📈 IDX Real-Time Trading Engine")
 
-# Inisialisasi Session State agar hasil scan tidak hilang
+# Inisialisasi Session State agar data hasil scan tidak hilang saat klik tombol lain
 if "bsjp_df" not in st.session_state:
     st.session_state.bsjp_df = None
 if "bpjs_df" not in st.session_state:
     st.session_state.bpjs_df = None
-
-# Fungsi Kalkulasi RSI 14
-def calculate_rsi(data, window=14):
-    delta = data.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
 
 # Menu Input Kode Saham untuk Data Real-Time
 ticker_input = st.text_input("Masukkan Kode Saham IDX (Contoh: BBCA, BBRI, ASII)", value="BBCA")
@@ -43,7 +34,7 @@ def load_stock_data(ticker):
         clean_ticker = ticker.strip().upper()
     
     stock = yf.Ticker(clean_ticker)
-    df = stock.history(period="2mo")
+    df = stock.history(period="1mo")
     return df, clean_ticker
 
 if st.button("🔍 Tarik Data Real-Time"):
@@ -99,29 +90,24 @@ WATCHLIST = [
 
 # --- LOGIKA TOMBOL BSJP ---
 if st.button("📈 BSJP — Beli Sore Jual Pagi"):
-    with st.spinner("Memindai kandidat BSJP (RSI >= 50)..."):
+    with st.spinner("Memindai seluruh sektor untuk kandidat BSJP..."):
         bsjp_results = []
         for s in WATCHLIST:
             try:
                 t = yf.Ticker(s)
-                hist = t.history(period="2mo")
-                if len(hist) > 20:
-                    df_rsi = calculate_rsi(hist['Close'])
-                    current_rsi = df_rsi.iloc[-1]
-                    
+                hist = t.history(period="3d")
+                if len(hist) >= 2:
                     close_today = hist['Close'].iloc[-1]
                     close_yesterday = hist['Close'].iloc[-2]
                     vol_today = hist['Volume'].iloc[-1]
                     
                     change = ((close_today - close_yesterday) / close_yesterday) * 100
                     
-                    # Filter: Kenaikan minimal 1%, Volume aktif, RSI minimal 50
-                    if change >= 1.0 and vol_today > 25000 and current_rsi >= 50:
+                    if change >= 1.5 and vol_today > 50000:
                         bsjp_results.append({
                             "Saham": s,
                             "Harga Closing": round(close_today, 2),
                             "Kenaikan (%)": round(change, 2),
-                            "RSI (14)": round(current_rsi, 1),
                             "Volume": int(vol_today)
                         })
             except:
@@ -132,40 +118,35 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
         else:
             st.session_state.bsjp_df = pd.DataFrame()
 
-# Tampilkan hasil BSJP
+# Tampilkan hasil BSJP jika ada di memori
 if st.session_state.bsjp_df is not None:
     if not st.session_state.bsjp_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} kandidat BSJP potensial:")
+        st.success(f"Ditemukan {len(st.session_state.bsjp_df)} kandidat BSJP berkualitas:")
         st.dataframe(st.session_state.bsjp_df)
     else:
-        st.warning("Belum ada saham yang memenuhi kriteria BSJP saat ini.")
+        st.warning("Belum ada saham yang memenuhi kriteria ketat BSJP saat ini.")
 
 # --- LOGIKA TOMBOL BPJS ---
 if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
-    with st.spinner("Memindai kandidat BPJS (RSI >= 50)..."):
+    with st.spinner("Memindai seluruh sektor untuk kandidat BPJS..."):
         bpjs_results = []
         for s in WATCHLIST:
             try:
                 t = yf.Ticker(s)
-                hist = t.history(period="2mo")
-                if len(hist) > 20:
-                    df_rsi = calculate_rsi(hist['Close'])
-                    current_rsi = df_rsi.iloc[-1]
-                    
+                hist = t.history(period="2d")
+                if not hist.empty:
                     open_price = hist['Open'].iloc[-1]
                     close_price = hist['Close'].iloc[-1]
                     vol_today = hist['Volume'].iloc[-1]
                     
                     change = ((close_price - open_price) / open_price) * 100
                     
-                    # Filter: Pergerakan intraday minimal 0.5%, Volume aktif, RSI minimal 50
-                    if change >= 0.5 and vol_today > 25000 and current_rsi >= 50:
+                    if change >= 1.0 and vol_today > 50000:
                         bpjs_results.append({
                             "Saham": s,
                             "Open Pagi": round(open_price, 2),
                             "Terakhir": round(close_price, 2),
                             "Est. Intraday (%)": round(change, 2),
-                            "RSI (14)": round(current_rsi, 1),
                             "Volume": int(vol_today)
                         })
             except:
@@ -176,13 +157,13 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
         else:
             st.session_state.bpjs_df = pd.DataFrame()
 
-# Tampilkan hasil BPJS
+# Tampilkan hasil BPJS jika ada di memori
 if st.session_state.bpjs_df is not None:
     if not st.session_state.bpjs_df.empty:
-        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS potensial:")
+        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS berkualitas:")
         st.dataframe(st.session_state.bpjs_df)
     else:
-        st.warning("Belum ada saham yang memenuhi kriteria BPJS saat ini.")
+        st.warning("Belum ada saham yang memenuhi kriteria ketat BPJS saat ini.")
 
 st.markdown("---")
 st.subheader("⚙️ PENGATURAN API")
