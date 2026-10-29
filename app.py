@@ -105,7 +105,7 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     
                     if change >= 1.5 and vol_today > 50000:
                         bsjp_results.append({
-                            "Saham": s,
+                            "Saham": s.replace(".JK", ""),  # Simbol .JK dihapus di sini
                             "Harga Closing": round(close_today, 2),
                             "Kenaikan (%)": round(change, 2),
                             "Volume": int(vol_today)
@@ -143,7 +143,7 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                     
                     if change >= 1.0 and vol_today > 50000:
                         bpjs_results.append({
-                            "Saham": s,
+                            "Saham": s.replace(".JK", ""),  # Simbol .JK dihapus di sini
                             "Open Pagi": round(open_price, 2),
                             "Terakhir": round(close_price, 2),
                             "Est. Intraday (%)": round(change, 2),
