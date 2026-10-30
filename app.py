@@ -1,7 +1,6 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import requests
 
 st.set_page_config(page_title="Stock Trading Engine Real-Time", layout="centered")
 
@@ -18,25 +17,7 @@ st.markdown("""
 
 st.title("📈 IDX Real-Time Trading Engine")
 
-# Token & Chat ID Telegram
-TELEGRAM_BOT_TOKEN = "8694938627:AAHFF-uRBgSZIWFHK941fMMKglZIeZtAeVw"
-TELEGRAM_CHAT_ID = "8805497572"
-
-# Fungsi Pengirim Telegram Otomatis (Menggunakan HTML Parse Mode agar anti-error)
-def send_telegram_message(message_html):
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message_html,
-            "parse_mode": "HTML"
-        }
-        response = requests.post(url, json=payload, timeout=8)
-        return response.status_code == 200
-    except Exception:
-        return False
-
-# Inisialisasi Session State
+# Inisialisasi Session State agar data hasil scan tidak hilang saat klik tombol lain
 if "bsjp_df" not in st.session_state:
     st.session_state.bsjp_df = None
 if "bpjs_df" not in st.session_state:
@@ -169,19 +150,6 @@ if st.session_state.bsjp_df is not None:
             tp = row.get("Supply TP", 0)
             sl = round(harga * 0.98, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
-        
-        if st.button("📤 Kirim Rekap BSJP ke Telegram"):
-            msg = "<b>🚨 SCANNER RESULT: BSJP 🚨</b>\n\n"
-            for index, row in st.session_state.bsjp_df.iterrows():
-                saham = row.get("Saham", "-")
-                harga = row.get("Harga Closing", 0)
-                tp = row.get("Supply TP", 0)
-                sl = round(harga * 0.98, 2)
-                msg += f"• <b>{saham}</b> | Harga: {harga}\n  TP (Supply): Rp {tp} | SL: Rp {sl}\n\n"
-            if send_telegram_message(msg):
-                st.success("Berhasil mengirim rekap ke Telegram!")
-            else:
-                st.error("Gagal mengirim ke Telegram. Pastikan bot sudah di-START di Telegram!")
     else:
         st.warning("Belum ada saham yang memenuhi kriteria kenaikan 1%-8% + Volume Spike untuk BSJP.")
 
@@ -233,19 +201,6 @@ if st.session_state.bpjs_df is not None:
             tp = row.get("Supply TP", 0)
             sl = round(harga * 0.98, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
-        
-        if st.button("📤 Kirim Rekap BPJS ke Telegram"):
-            msg = "<b>🚨 SCANNER RESULT: BPJS 🚨</b>\n\n"
-            for index, row in st.session_state.bpjs_df.iterrows():
-                saham = row.get("Saham", "-")
-                harga = row.get("Terakhir", 0)
-                tp = row.get("Supply TP", 0)
-                sl = round(harga * 0.98, 2)
-                msg += f"• <b>{saham}</b> | Harga: {harga}\n  TP (Supply): Rp {tp} | SL: Rp {sl}\n\n"
-            if send_telegram_message(msg):
-                st.success("Berhasil mengirim rekap ke Telegram!")
-            else:
-                st.error("Gagal mengirim ke Telegram. Pastikan bot sudah di-START di Telegram!")
     else:
         st.warning("Belum ada saham yang memenuhi kriteria kenaikan 1%-8% untuk BPJS.")
 
@@ -296,19 +251,6 @@ if st.session_state.haka_df is not None:
             tp = row.get("Next Supply TP", 0)
             sl = round(harga * 0.975, 2)
             st.markdown(f"- **{saham}** (Harga Breakout: {harga}) ➡️ **Target TP (Next Supply):** Rp {tp} | **Stop Loss:** Rp {sl} (-2.5%)")
-        
-        if st.button("📤 Kirim Rekap HAKA ke Telegram"):
-            msg = "<b>🚨 SCANNER RESULT: HAKA BREAKOUT 🚨</b>\n\n"
-            for index, row in st.session_state.haka_df.iterrows():
-                saham = row.get("Saham", "-")
-                harga = row.get("Harga Breakout", 0)
-                tp = row.get("Next Supply TP", 0)
-                sl = round(harga * 0.975, 2)
-                msg += f"• <b>{saham}</b> | Breakout: {harga}\n  TP (Next Supply): Rp {tp} | SL: Rp {sl}\n\n"
-            if send_telegram_message(msg):
-                st.success("Berhasil mengirim rekap ke Telegram!")
-            else:
-                st.error("Gagal mengirim ke Telegram. Pastikan bot sudah di-START di Telegram!")
     else:
         st.warning("Belum ada saham breakout dengan kenaikan 1%-8% saat ini.")
 
@@ -359,19 +301,6 @@ if st.session_state.scalp_df is not None:
             tp = row.get("Supply TP", 0)
             sl = round(harga * 0.985, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Harian):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-1.5%)")
-        
-        if st.button("📤 Kirim Rekap Scalping ke Telegram"):
-            msg = "<b>🚨 SCANNER RESULT: SCALPING 🚨</b>\n\n"
-            for index, row in st.session_state.scalp_df.iterrows():
-                saham = row.get("Saham", "-")
-                harga = row.get("Harga Terakhir", 0)
-                tp = row.get("Supply TP", 0)
-                sl = round(harga * 0.985, 2)
-                msg += f"• <b>{saham}</b> | Harga: {harga}\n  TP (Supply): Rp {tp} | SL: Rp {sl}\n\n"
-            if send_telegram_message(msg):
-                st.success("Berhasil mengirim rekap ke Telegram!")
-            else:
-                st.error("Gagal mengirim ke Telegram. Pastikan bot sudah di-START di Telegram!")
     else:
         st.warning("Belum ada saham scalping dengan range 3%-8% saat ini.")
 
@@ -396,7 +325,57 @@ if st.button("🚀 SESI 2 — Spike & Momentum (Tiba-Tiba Naik)"):
                     if close_today <= 3000 and turnover >= 3_000_000_000 and (2.0 <= intraday_spike <= 8.0) and rvol >= 1.5:
                         sesi2_results.append({
                             "Saham": s.replace(".JK", ""),
-                            "Harga Terakhir": round(close_today, 2)
+                            "Harga Terakhir": round(close_today, 2),
+                            "Spike Intraday (%)": round(intraday_spike, 2),
+                            "RVOL": round(rvol, 2),
+                            "Supply TP": round(high_today * 1.03, 2)
+                        })
+            except:
+                continue
+        
+        if sesi2_results:
+            df_res = pd.DataFrame(sesi2_results).sort_values(by="Spike Intraday (%)", ascending=False)
+            st.session_state.sesi2_df = df_res.head(5)
+        else:
+            st.session_state.sesi2_df = pd.DataFrame()
+
+if st.session_state.sesi2_df is not None:
+    if not st.session_state.sesi2_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.sesi2_df)} kandidat Sesi 2 Spike & Momentum:")
+        cols = [c for c in ['Saham', 'Harga Terakhir', 'Spike Intraday (%)', 'RVOL'] if c in st.session_state.sesi2_df.columns]
+        st.dataframe(st.session_state.sesi2_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Sesi 2 Spike Supply & Demand)")
+        for index, row in st.session_state.sesi2_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Harga Terakhir", 0)
+            tp = row.get("Supply TP", 0)
+            sl = round(harga * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-2%)")
+    else:
+        st.warning("Belum ada emiten dengan lonjakan spike 2%-8% di Sesi 2 saat ini.")
+
+# --- LOGIKA TOMBOL SUPPORT HUNTING ---
+if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
+    with st.spinner("Memindai saham di area Demand Zone saat pasar koreksi..."):
+        support_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="1mo")
+                if len(hist) >= 20:
+                    close_today = hist['Close'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    turnover = close_today * vol_today
+                    demand_zone = hist['Low'].iloc[-20:].min()
+                    supply_zone = hist['High'].iloc[-20:].max()
+                    distance_to_demand = ((close_today - demand_zone) / demand_zone) * 100
+                    avg_vol = hist['Volume'].iloc[-6:-1].mean()
+                    rvol = vol_today / avg_vol if avg_vol > 0 else 0
+                    
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (0 <= distance_to_demand <= 3.0) and rvol >= 0.8:
+                        support_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Terakhir": round(close_today, 2),
                             "Demand Zone": round(demand_zone, 2),
                             "Jarak ke Demand (%)": round(distance_to_demand, 2),
                             "RVOL": round(rvol, 2),
