@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 
-st.set_page_config(page_title="Stock Trading Engine Real-Time", layout="centered")
+st.set_page_config(page_title="Whale Tracker & IDX Screener", layout="centered")
 
 st.markdown("""
     <style>
@@ -15,7 +15,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📈 IDX Real-Time Trading Engine")
+st.title("🐋 Whale Tracker & IDX Screener")
 
 # Inisialisasi Session State agar data hasil scan tidak hilang saat klik tombol lain
 if "bsjp_df" not in st.session_state:
@@ -390,6 +390,7 @@ if st.button("🛡️ SUPPORT HUNTING — Deteksi Akumulasi Whale"):
                     demand_zone = hist['Low'].iloc[-20:].min()
                     supply_zone = hist['High'].iloc[-20:].max()
                     distance_to_demand = ((close_today - demand_zone) / demand_zone) * 100
+                    
                     avg_vol_20 = hist['Volume'].iloc[-20:].mean()
                     avg_vol_5 = hist['Volume'].iloc[-5:-1].mean()
                     is_whale_accumulating = avg_vol_5 >= (avg_vol_20 * 1.2) and vol_today >= (avg_vol_20 * 0.9)
