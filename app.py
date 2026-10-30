@@ -355,7 +355,7 @@ if st.session_state.sesi2_df is not None:
         st.warning("Belum ada emiten dengan lonjakan spike 2%-8% di Sesi 2 saat ini.")
 
 # --- LOGIKA TOMBOL SUPPORT HUNTING (DENGAN DETEKSI AKUMULASI WHALE) ---
-if st.button("🛡️ SUPPORT HUNTING — Deteksi Akumulasi Whale & Markup Phase"):
+if st.button("🛡️ SUPPORT HUNTING — Deteksi Akumulasi Whale"):
     with st.spinner("Memindai emiten di area Demand Zone yang diakumulasi Whale..."):
         support_results = []
         for s in WATCHLIST:
@@ -402,14 +402,14 @@ if st.session_state.support_df is not None:
         st.success(f"Ditemukan {len(st.session_state.support_df)} kandidat Saham dengan Indikasi Akumulasi Whale di Support:")
         cols = [c for c in ['Saham', 'Harga Terakhir', 'Demand Zone', 'Jarak ke Demand (%)', 'RVOL Akumulasi'] if c in st.session_state.support_df.columns]
         st.dataframe(st.session_state.support_df[cols])
-        st.markdown("### 🎯 Rincian Trading Plan (Markup Phase Anticipation)")
+        st.markdown("### 🎯 Rincian Trading Plan (Support Akumulasi)")
         for index, row in st.session_state.support_df.iterrows():
             saham = row.get("Saham", "-")
             harga = row.get("Harga Terakhir", 0)
             demand = row.get("Demand Zone", 0)
             tp = row.get("Supply TP", 0)
             sl = round(demand * 0.975, 2)
-            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Demand / Akumulasi Area:** Rp {demand} | **Target Markup TP (Supply):** Rp {tp} | **Stop Loss:** Rp {sl}")
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Demand / Akumulasi Area:** Rp {demand} | **Target TP (Supply):** Rp {tp} | **Stop Loss:** Rp {sl}")
     else:
         st.warning("Belum ada emiten yang menunjukkan pola akumulasi whale di area support saat ini.")
 
