@@ -123,7 +123,8 @@ if st.button("📈 BSJP — Beli Sore Jual Pagi"):
                     avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    if close_today <= 3000 and turnover >= 3_000_000_000 and change >= 1.5 and rvol >= 1.5:
+                    # Filter Kenaikan 1% s.d. 8%
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (1.0 <= change <= 8.0) and rvol >= 1.5:
                         bsjp_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Closing": round(close_today, 2),
@@ -153,7 +154,7 @@ if st.session_state.bsjp_df is not None:
             sl = round(harga * 0.98, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
     else:
-        st.warning("Belum ada saham yang memenuhi kriteria ketat BSJP + Volume Spike saat ini.")
+        st.warning("Belum ada saham yang memenuhi kriteria kenaikan 1%-8% + Volume Spike untuk BSJP.")
 
 # --- LOGIKA TOMBOL BPJS ---
 if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
@@ -175,7 +176,8 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
                     avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    if close_price <= 3000 and turnover >= 3_000_000_000 and change >= 1.0 and rvol >= 1.5:
+                    # Filter Kenaikan 1% s.d. 8%
+                    if close_price <= 3000 and turnover >= 3_000_000_000 and (1.0 <= change <= 8.0) and rvol >= 1.5:
                         bpjs_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Open Pagi": round(open_price, 2),
@@ -206,7 +208,7 @@ if st.session_state.bpjs_df is not None:
             sl = round(harga * 0.98, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
     else:
-        st.warning("Belum ada saham yang memenuhi kriteria ketat BPJS + Volume Spike saat ini.")
+        st.warning("Belum ada saham yang memenuhi kriteria kenaikan 1%-8% untuk BPJS.")
 
 # --- LOGIKA TOMBOL HAKA / BREAKOUT ---
 if st.button("🚀 HAKA — Free Breakout Scanner"):
@@ -228,7 +230,8 @@ if st.button("🚀 HAKA — Free Breakout Scanner"):
                     avg_vol = hist['Volume'].iloc[-10:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    if close_today <= 3000 and turnover >= 3_000_000_000 and close_today >= prev_supply and change >= 1.0 and rvol >= 2.0:
+                    # Filter Kenaikan Breakout 1% s.d. 8%
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and close_today >= prev_supply and (1.0 <= change <= 8.0) and rvol >= 2.0:
                         haka_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Breakout": round(close_today, 2),
@@ -258,7 +261,7 @@ if st.session_state.haka_df is not None:
             sl = round(harga * 0.975, 2)
             st.markdown(f"- **{saham}** (Harga Breakout: {harga}) ➡️ **Target TP (Next Supply):** Rp {tp} | **Stop Loss:** Rp {sl} (-2.5%)")
     else:
-        st.warning("Belum ada saham yang menembus breakout dengan konfirmasi volume spike saat ini.")
+        st.warning("Belum ada saham breakout dengan kenaikan 1%-8% saat ini.")
 
 # --- LOGIKA TOMBOL SCALPING FAST TRADE ---
 if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
@@ -280,7 +283,8 @@ if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
                     avg_vol = hist['Volume'].iloc[-6:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    if close_today <= 3000 and turnover >= 3_000_000_000 and daily_range >= 3.0 and rvol >= 1.8:
+                    # Filter Range Harian 3% s.d. 8%
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (3.0 <= daily_range <= 8.0) and rvol >= 1.8:
                         scalp_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Terakhir": round(close_today, 2),
@@ -310,7 +314,7 @@ if st.session_state.scalp_df is not None:
             sl = round(harga * 0.985, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Harian):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-1.5%)")
     else:
-        st.warning("Belum ada saham scalping dengan lonjakan volume tinggi saat ini.")
+        st.warning("Belum ada saham scalping dengan range 3%-8% saat ini.")
 
 # --- LOGIKA TOMBOL SESI 2 SPIKE MOMENTUM ---
 if st.button("🚀 SESI 2 — Spike & Momentum (Tiba-Tiba Naik)"):
@@ -332,7 +336,8 @@ if st.button("🚀 SESI 2 — Spike & Momentum (Tiba-Tiba Naik)"):
                     avg_vol = hist['Volume'].iloc[-4:-1].mean()
                     rvol = vol_today / avg_vol if avg_vol > 0 else 0
                     
-                    if close_today <= 3000 and turnover >= 3_000_000_000 and intraday_spike >= 2.0 and rvol >= 1.5:
+                    # Filter Spike Intraday 2% s.d. 8%
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (2.0 <= intraday_spike <= 8.0) and rvol >= 1.5:
                         sesi2_results.append({
                             "Saham": s.replace(".JK", ""),
                             "Harga Terakhir": round(close_today, 2),
@@ -362,7 +367,7 @@ if st.session_state.sesi2_df is not None:
             sl = round(harga * 0.98, 2)
             st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-2%)")
     else:
-        st.warning("Belum ada emiten yang mencatatkan lonjakan volume spike di Sesi 2 saat ini.")
+        st.warning("Belum ada emiten dengan lonjakan spike 2%-8% di Sesi 2 saat ini.")
 
 # --- LOGIKA TOMBOL SUPPORT HUNTING ---
 if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
@@ -398,6 +403,8 @@ if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
         
         if support_results:
             df_res = pd.DataFrame(support_results).sort_values(by="Jarak ke Demand (%)", ascending=True)
+            st.session_state.support_df = df_res.head(5)
+        else:
             st.session_state.support_df = pd.DataFrame()
 
 if st.session_state.support_df is not None:
