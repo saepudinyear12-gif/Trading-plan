@@ -188,3 +188,225 @@ if st.button("📉 BPJS — Beli Pagi Jual Siang/Sore"):
             st.session_state.bpjs_df = df_res.head(5)
         else:
             st.session_state.bpjs_df = pd.DataFrame()
+
+if st.session_state.bpjs_df is not None:
+    if not st.session_state.bpjs_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.bpjs_df)} kandidat BPJS terbaik:")
+        cols = [c for c in ['Saham', 'Open Pagi', 'Terakhir', 'Est. Intraday (%)', 'RVOL'] if c in st.session_state.bpjs_df.columns]
+        st.dataframe(st.session_state.bpjs_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Target Supply Zone)")
+        for index, row in st.session_state.bpjs_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Terakhir", 0)
+            tp = row.get("Supply TP", 0)
+            sl = round(harga * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl} (-2%)")
+    else:
+        st.warning("Belum ada saham yang memenuhi kriteria kenaikan 1%-8% untuk BPJS.")
+
+# --- LOGIKA TOMBOL HAKA / BREAKOUT ---
+if st.button("🚀 HAKA — Free Breakout Scanner"):
+    with st.spinner("Memindai emiten potensial Breakout / HAKA..."):
+        haka_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="15d")
+                if len(hist) >= 10:
+                    close_today = hist['Close'].iloc[-1]
+                    prev_supply = hist['High'].iloc[-10:-1].max()
+                    vol_today = hist['Volume'].iloc[-1]
+                    change = ((close_today - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
+                    turnover = close_today * vol_today
+                    next_supply = round(close_today * 1.06, 2)
+                    avg_vol = hist['Volume'].iloc[-10:-1].mean()
+                    rvol = vol_today / avg_vol if avg_vol > 0 else 0
+                    
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and close_today >= prev_supply and (1.0 <= change <= 8.0) and rvol >= 2.0:
+                        haka_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Breakout": round(close_today, 2),
+                            "Kenaikan (%)": round(change, 2),
+                            "RVOL": round(rvol, 2),
+                            "Next Supply TP": next_supply
+                        })
+            except:
+                continue
+        
+        if haka_results:
+            df_res = pd.DataFrame(haka_results).sort_values(by="Kenaikan (%)", ascending=False)
+            st.session_state.haka_df = df_res.head(5)
+        else:
+            st.session_state.haka_df = pd.DataFrame()
+
+if st.session_state.haka_df is not None:
+    if not st.session_state.haka_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.haka_df)} kandidat HAKA Breakout terbaik:")
+        cols = [c for c in ['Saham', 'Harga Breakout', 'Kenaikan (%)', 'RVOL'] if c in st.session_state.haka_df.columns]
+        st.dataframe(st.session_state.haka_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Breakout Supply & Demand)")
+        for index, row in st.session_state.haka_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Harga Breakout", 0)
+            tp = row.get("Next Supply TP", 0)
+            sl = round(harga * 0.975, 2)
+            st.markdown(f"- **{saham}** (Harga Breakout: {harga}) ➡️ **Target TP (Next Supply):** Rp {tp} | **Stop Loss:** Rp {sl} (-2.5%)")
+    else:
+        st.warning("Belum ada saham breakout dengan kenaikan 1%-8% saat ini.")
+
+# --- LOGIKA TOMBOL SCALPING FAST TRADE ---
+if st.button("⚡ SCALPING — Fast Trade Momentum Scanner"):
+    with st.spinner("Memindai emiten scalping dengan volatilitas tinggi..."):
+        scalp_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="6d")
+                if len(hist) >= 6:
+                    close_today = hist['Close'].iloc[-1]
+                    high_today = hist['High'].iloc[-1]
+                    low_today = hist['Low'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    daily_range = ((high_today - low_today) / low_today) * 100
+                    turnover = close_today * vol_today
+                    avg_vol = hist['Volume'].iloc[-6:-1].mean()
+                    rvol = vol_today / avg_vol if avg_vol > 0 else 0
+                    
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (3.0 <= daily_range <= 8.0) and rvol >= 1.8:
+                        scalp_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Terakhir": round(close_today, 2),
+                            "Range Harian (%)": round(daily_range, 2),
+                            "RVOL": round(rvol, 2),
+                            "Supply TP": round(high_today, 2)
+                        })
+            except:
+                continue
+        
+        if scalp_results:
+            df_res = pd.DataFrame(scalp_results).sort_values(by="Range Harian (%)", ascending=False)
+            st.session_state.scalp_df = df_res.head(5)
+        else:
+            st.session_state.scalp_df = pd.DataFrame()
+
+if st.session_state.scalp_df is not None:
+    if not st.session_state.scalp_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.scalp_df)} kandidat Scalping Fast Trade Pilihan:")
+        cols = [c for c in ['Saham', 'Harga Terakhir', 'Range Harian (%)', 'RVOL'] if c in st.session_state.scalp_df.columns]
+        st.dataframe(st.session_state.scalp_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Scalping Supply & Demand)")
+        for index, row in st.session_state.scalp_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Harga Terakhir", 0)
+            tp = row.get("Supply TP", 0)
+            sl = round(harga * 0.985, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Harian):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-1.5%)")
+    else:
+        st.warning("Belum ada saham scalping dengan range 3%-8% saat ini.")
+
+# --- LOGIKA TOMBOL SESI 2 SPIKE MOMENTUM ---
+if st.button("🚀 SESI 2 — Spike & Momentum (Tiba-Tiba Naik)"):
+    with st.spinner("Memindai emiten yang mengalami lonjakan mendadak di Sesi 2..."):
+        sesi2_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="4d")
+                if len(hist) >= 4:
+                    close_today = hist['Close'].iloc[-1]
+                    open_today = hist['Open'].iloc[-1]
+                    high_today = hist['High'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    intraday_spike = ((close_today - open_today) / open_today) * 100
+                    turnover = close_today * vol_today
+                    avg_vol = hist['Volume'].iloc[-4:-1].mean()
+                    rvol = vol_today / avg_vol if avg_vol > 0 else 0
+                    
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (2.0 <= intraday_spike <= 8.0) and rvol >= 1.5:
+                        sesi2_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Terakhir": round(close_today, 2),
+                            "Spike Intraday (%)": round(intraday_spike, 2),
+                            "RVOL": round(rvol, 2),
+                            "Supply TP": round(high_today * 1.03, 2)
+                        })
+            except:
+                continue
+        
+        if sesi2_results:
+            df_res = pd.DataFrame(sesi2_results).sort_values(by="Spike Intraday (%)", ascending=False)
+            st.session_state.sesi2_df = df_res.head(5)
+        else:
+            st.session_state.sesi2_df = pd.DataFrame()
+
+if st.session_state.sesi2_df is not None:
+    if not st.session_state.sesi2_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.sesi2_df)} kandidat Sesi 2 Spike & Momentum:")
+        cols = [c for c in ['Saham', 'Harga Terakhir', 'Spike Intraday (%)', 'RVOL'] if c in st.session_state.sesi2_df.columns]
+        st.dataframe(st.session_state.sesi2_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Sesi 2 Spike Supply & Demand)")
+        for index, row in st.session_state.sesi2_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Harga Terakhir", 0)
+            tp = row.get("Supply TP", 0)
+            sl = round(harga * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Target TP (Supply Zone):** Rp {tp} | **Stop Loss Ketat:** Rp {sl} (-2%)")
+    else:
+        st.warning("Belum ada emiten dengan lonjakan spike 2%-8% di Sesi 2 saat ini.")
+
+# --- LOGIKA TOMBOL SUPPORT HUNTING ---
+if st.button("🛡️ SUPPORT HUNTING — Pantau Saham Dekat Support"):
+    with st.spinner("Memindai saham di area Demand Zone saat pasar koreksi..."):
+        support_results = []
+        for s in WATCHLIST:
+            try:
+                t = yf.Ticker(s)
+                hist = t.history(period="1mo")
+                if len(hist) >= 20:
+                    close_today = hist['Close'].iloc[-1]
+                    vol_today = hist['Volume'].iloc[-1]
+                    turnover = close_today * vol_today
+                    demand_zone = hist['Low'].iloc[-20:].min()
+                    supply_zone = hist['High'].iloc[-20:].max()
+                    distance_to_demand = ((close_today - demand_zone) / demand_zone) * 100
+                    avg_vol = hist['Volume'].iloc[-6:-1].mean()
+                    rvol = vol_today / avg_vol if avg_vol > 0 else 0
+                    
+                    if close_today <= 3000 and turnover >= 3_000_000_000 and (0 <= distance_to_demand <= 3.0) and rvol >= 0.8:
+                        support_results.append({
+                            "Saham": s.replace(".JK", ""),
+                            "Harga Terakhir": round(close_today, 2),
+                            "Demand Zone": round(demand_zone, 2),
+                            "Jarak ke Demand (%)": round(distance_to_demand, 2),
+                            "RVOL": round(rvol, 2),
+                            "Supply TP": round(supply_zone, 2)
+                        })
+            except:
+                continue
+        
+        if support_results:
+            df_res = pd.DataFrame(support_results).sort_values(by="Jarak ke Demand (%)", ascending=True)
+            st.session_state.support_df = df_res.head(5)
+        else:
+            st.session_state.support_df = pd.DataFrame()
+
+if st.session_state.support_df is not None:
+    if not st.session_state.support_df.empty:
+        st.success(f"Ditemukan {len(st.session_state.support_df)} kandidat Saham di Area Demand Zone:")
+        cols = [c for c in ['Saham', 'Harga Terakhir', 'Demand Zone', 'Jarak ke Demand (%)', 'RVOL'] if c in st.session_state.support_df.columns]
+        st.dataframe(st.session_state.support_df[cols])
+        st.markdown("### 🎯 Rincian Trading Plan (Support Supply & Demand Hunting)")
+        for index, row in st.session_state.support_df.iterrows():
+            saham = row.get("Saham", "-")
+            harga = row.get("Harga Terakhir", 0)
+            demand = row.get("Demand Zone", 0)
+            tp = row.get("Supply TP", 0)
+            sl = round(demand * 0.98, 2)
+            st.markdown(f"- **{saham}** (Harga: {harga}) ➡️ **Demand Zone:** Rp {demand} | **Target TP (Supply Zone):** Rp {tp} | **Stop Loss:** Rp {sl}")
+    else:
+        st.warning("Belum ada saham yang tertahan di Demand Zone dengan likuiditas memadai saat ini.")
+
+st.markdown("---")
+st.markdown("### ⚙️ PENGATURAN API")
+api_key = st.text_input("API Key", type="password", value="1234567890abcdef")
+high_accuracy = st.toggle("Mode Akurasi Tinggi (50.000 simulasi MC)")
