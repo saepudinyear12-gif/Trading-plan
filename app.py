@@ -66,7 +66,7 @@ if st.button("🔍 Tarik Data Real-Time & Trading Plan"):
                 st.dataframe(df.tail(5))
             else:
                 st.warning(f"Data untuk '{ticker_input}' tidak ditemukan.")
-        except Exception as e:
+        except Exception:
             st.error("Gagal memuat data. Silakan coba lagi.")
 
 st.markdown("---")
@@ -388,7 +388,7 @@ if st.button("🛡️ SUPPORT HUNTING — Deteksi Akumulasi Whale & Markup Phase
                             "RVOL Akumulasi": round(rvol, 2),
                             "Supply TP": round(supply_zone, 2)
                         })
-                        except:
+            except:
                 continue
         
         if support_results:
