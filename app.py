@@ -64,8 +64,8 @@ if st.button("🔍 Tarik Data Real-Time & Trading Plan"):
                 col3.metric("Target TP (Supply Zone)", f"Rp {int(supply_tp)}")
                 col4.metric("Stop Loss (Bawah Demand)", f"Rp {int(suggested_sl)}")
                 
-                st.subheader(f"Grafik Harga Penutupan - {final_ticker}")
-                st.line_chart(df['Close'])
+                st.subheader(f"Grafik Volume Transaksi - {final_ticker}")
+                st.bar_chart(df['Volume'])
                 
                 st.subheader("Data Transaksi Terakhir")
                 st.dataframe(df.tail(5))
