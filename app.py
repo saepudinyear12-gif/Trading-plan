@@ -52,7 +52,6 @@ if st.button("🔍 Tarik Data Real-Time & Trading Plan"):
                 last_price = df['Close'].iloc[-1]
                 supply_tp = round(df['High'].iloc[-10:].max(), 2)
                 demand_zone = round(df['Low'].iloc[-20:].min(), 2) if len(df) >= 20 else round(df['Low'].min(), 2)
-                breakout_level = round(df['High'].iloc[-10:-1].max(), 2) if len(df) >= 10 else supply_tp
                 suggested_sl = round(demand_zone * 0.98, 2)
                 
                 st.markdown(f"### 📋 Trading Plan (Supply & Demand): {final_ticker.replace('.JK', '')}")
@@ -62,11 +61,8 @@ if st.button("🔍 Tarik Data Real-Time & Trading Plan"):
                 col2.metric("Area Demand (Support)", f"Rp {int(demand_zone)}")
                 
                 col3, col4 = st.columns(2)
-                col3.metric("Level Breakout (Resisten)", f"Rp {int(breakout_level)}")
-                col4.metric("Target TP (Supply Zone)", f"Rp {int(supply_tp)}")
-                
-                col5, col6 = st.columns(2)
-                col5.metric("Stop Loss (Bawah Demand)", f"Rp {int(suggested_sl)}")
+                col3.metric("Target TP (Supply Zone)", f"Rp {int(supply_tp)}")
+                col4.metric("Stop Loss (Bawah Demand)", f"Rp {int(suggested_sl)}")
                 
                 st.subheader(f"Grafik Harga Penutupan - {final_ticker}")
                 st.line_chart(df['Close'])
